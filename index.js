@@ -9,6 +9,26 @@ function cloneRepository(cloneUrl, repoName) {
   execSync(`git clone ${cloneUrl}`, { stdio: "inherit" });
 }
 
+async function listAllRepositories(octokit) {
+  let repos = [];
+  let page = 1;
+
+  while (true) {
+    const response = await octokit.repos.listForAuthenticatedUser({
+      per_page: 100, // Fetch 100 repositories per page
+      page: page++,
+    });
+
+    if (response.data.length === 0) {
+      break; // No more repositories to fetch
+    }
+
+    repos = repos.concat(response.data);
+  }
+
+  return repos;
+}
+
 function listCloneCommands(repos, username) {
   const commands = repos.map((repo) => `git clone https://${username}@github.com/${repo.full_name}`).join("\n");
   fs.writeFileSync("clone-all-repos.txt", commands);
@@ -19,7 +39,7 @@ async function cloneRepositories(username, token, listCommands) {
   const octokit = new Octokit({ auth: token });
 
   try {
-    const { data: repos } = await octokit.repos.listForAuthenticatedUser({ username });
+    const repos = await listAllRepositories(octokit);
 
     if (listCommands) {
       listCloneCommands(repos, username);
