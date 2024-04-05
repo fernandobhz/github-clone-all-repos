@@ -1,6 +1,6 @@
 {
   "name": "github-clone-all-repos",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "github-clone-all-repos",
   "main": "index.js",
   "bin": "index.js",
