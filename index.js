@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
 const fs = require("fs");
+const os = require("os");
 const { Octokit } = require("@octokit/rest");
 const { execSync } = require("child_process");
+
+function generateScriptExtension() {
+  return os.platform() === "win32" ? "bat" : "sh";
+}
 
 function cloneRepository(cloneUrl, repoName) {
   console.log(`Cloning ${repoName}...`);
@@ -31,28 +36,30 @@ async function listAllRepositories(octokit) {
 
 function listCloneCommands(repos, username) {
   const commands = repos.map((repo) => `git clone https://${username}@github.com/${repo.full_name}`).join("\n");
-  fs.writeFileSync("clone-all-repos.txt", commands);
-  console.log("Commands to clone all repositories listed in clone-all-repos.txt");
+  fs.writeFileSync(`clone-all-repos.${generateScriptExtension()}`, commands);
+  console.log(`Commands to clone all repositories listed in clone-all-repos.${generateScriptExtension()}`);
 }
 
-async function cloneRepositories(username, token, listCommands) {
+async function cloneRepositories(username, token, justList, justMyRepos) {
   const octokit = new Octokit({ auth: token });
 
   try {
-    const repos = await listAllRepositories(octokit);
+    let repos = await listAllRepositories(octokit);
 
-    if (listCommands) {
-      listCloneCommands(repos, username);
-    } else {
-      repos.forEach((repo) => {
-        // Check if the user is the owner of the repository
-        if (repo.owner.login === username) {
-          const cloneUrl = `https://${username}@github.com/${repo.full_name}`;
-          cloneRepository(cloneUrl, repo.full_name);
-        }
-      });
-      console.log("All repositories cloned successfully!");
+    if (justMyRepos) {
+      repos = repos.filter((repo) => repo.owner.login === username);
     }
+
+    if (justList) {
+      return listCloneCommands(repos, username);
+    }
+
+    repos.forEach((repo) => {
+      const cloneUrl = `https://${username}@github.com/${repo.full_name}`;
+      cloneRepository(cloneUrl, repo.full_name);
+    });
+
+    console.log("All repositories cloned successfully!");
   } catch (error) {
     console.error("Error fetching repositories:", error);
   }
@@ -61,16 +68,17 @@ async function cloneRepositories(username, token, listCommands) {
 function main() {
   const username = process.argv[2];
   const token = process.argv[3];
-  const listCommands = process.argv[4] === "--just-list";
+  const justList = process.argv[4] === "--just-list";
+  const justMyRepos = process.argv[5] === "--just-my-repos";
 
   if (!username || !token) {
-    console.error("Usage: clone_repos <username> <token> [--just-list]");
+    console.error("Usage: clone_repos <username> <token> [--just-list] [--just-my-repos]");
     console.error("Make sure to provide your GitHub username and personal access token.");
     console.error("You can generate a personal access token here: https://github.com/settings/tokens");
     process.exit(1);
   }
 
-  cloneRepositories(username, token, listCommands);
+  cloneRepositories(username, token, justList, justMyRepos);
 }
 
 main();
