@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const { Octokit } = require("@octokit/rest");
 const { execSync } = require("child_process");
 
@@ -29,6 +30,9 @@ function main() {
 
     if (!username || !token) {
         console.error("Usage: node clone_repos.js <username> <token>");
+        console.error("Usage: clone_repos <username> <token>");
+        console.error("Make sure to provide your GitHub username and personal access token.");
+        console.error("You can generate a personal access token here: https://github.com/settings/tokens");
         process.exit(1);
     }
 

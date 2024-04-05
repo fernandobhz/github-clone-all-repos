@@ -1,0 +1,15 @@
+{
+  "name": "github-clone-all-repos",
+  "version": "1.0.0",
+  "description": "github-clone-all-repos",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Fernando Reis Guimarães",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/rest": "^20.1.0"
+  }
+}
