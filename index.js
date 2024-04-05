@@ -19,7 +19,7 @@ async function cloneRepositories(username, token, listCommands) {
   const octokit = new Octokit({ auth: token });
 
   try {
-    const { data: repos } = await octokit.repos.listForUser({ username });
+    const { data: repos } = await octokit.repos.listForAuthenticatedUser({ username });
 
     if (listCommands) {
       listCloneCommands(repos, username);
