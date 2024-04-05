@@ -11,7 +11,7 @@ async function cloneRepositories(username, token) {
     const octokit = new Octokit({ auth: token });
 
     try {
-        const { data: repos } = await octokit.repos.listForAuthenticatedUser({ username });
+        const { data: repos } = await octokit.repos.listForUser({ username });
         
         repos.forEach((repo) => {
             const cloneUrl = `https://${username}@github.com/${repo.full_name}.git`;
